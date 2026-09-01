@@ -38,7 +38,7 @@ if client.collection_exists(COLLECTION_NAME):
 # Create collection
 client.create_collection(
     collection_name=COLLECTION_NAME,
-    vector_config=VectorParams(
+    vectors_config=VectorParams(
         size=EMBEDDING_SIZE,
         distance=Distance.COSINE,
     ),
@@ -109,7 +109,7 @@ def search(query, top_k=3):
     # Search Qdrant for similar vectors
     results = client.query_points(
         collection_name=COLLECTION_NAME,
-        query_vector=query_vector,
+        query=query_vector,
         limit=top_k,
         with_payload=True
     ).points
@@ -122,7 +122,7 @@ def search_with_filter(query, query_filter=None, top_k=3):
 
     results = client.query_points(
         collection_name=COLLECTION_NAME,
-        query_vector=query_vector,
+        query=query_vector,
         limit=top_k,
         with_payload=True,
         query_filter=query_filter,
@@ -171,9 +171,14 @@ def ask_llm(question, context):
     {question}
     """
 
-    response = groq_client.generate(
+    response = groq_client.chat.completions.create(
         model="openai/gpt-oss-120b",
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {
+                "role": "user", 
+                "content": prompt
+            }
+        ],
     )
 
     return response.choices[0].message.content
